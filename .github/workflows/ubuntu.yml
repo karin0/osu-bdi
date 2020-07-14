@@ -1,14 +1,17 @@
 name: Ubuntu
-# Qt官方没有linux平台的x86包
 on:
   push:
     paths-ignore:
       - 'README.md'
       - 'LICENSE'
+      - 'script.js'
+      - 'gen_tw_ts.py'
   pull_request:
     paths-ignore:
       - 'README.md'
       - 'LICENSE'
+      - 'script.js'
+      - 'gen_tw_ts.py'
 jobs:
   build:
     name: Build

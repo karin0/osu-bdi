@@ -1,17 +1,17 @@
 name: Windows
 on:
-  # push 代码时触发 workflow
   push:
-    # 忽略 README.md
     paths-ignore:
       - 'README.md'
       - 'LICENSE'
-  # pull_request 时触发 workflow
+      - 'script.js'
+      - 'gen_tw_ts.py'
   pull_request:
-    # 忽略 README.md
     paths-ignore:
       - 'README.md'
       - 'LICENSE'
+      - 'script.js'
+      - 'gen_tw_ts.py'
 jobs:
   build:
     name: Build
@@ -24,6 +24,7 @@ jobs:
         # mingw 用不了
         # qt_arch: [win64_msvc2017_64, win32_msvc2017, win32_mingw53,win32_mingw73]
         qt_arch: [win64_msvc2019_64, win32_msvc2019]
+        qt_target: [desktop]
         # 额外设置 msvc_arch
         include:
           - qt_arch: win64_msvc2019_64

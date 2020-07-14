@@ -1,13 +1,17 @@
-name: MacOS
+name: macOS
 on:
   push:
     paths-ignore:
       - 'README.md'
       - 'LICENSE'
+      - 'script.js'
+      - 'gen_tw_ts.py'
   pull_request:
     paths-ignore:
       - 'README.md'
       - 'LICENSE'
+      - 'script.js'
+      - 'gen_tw_ts.py'
 jobs:
   build:
     name: Build
