@@ -30,7 +30,17 @@ jobs:
         with:
           path: ../Qt/${{matrix.qt_ver}}/${{matrix.qt_arch}}
           key: ${{ runner.os }}-Qt/${{matrix.qt_ver}}/${{matrix.qt_arch}}
+      - name: setupQt
+        if: steps.MacosCacheQt.outputs.cache-hit == 'true'
+        shell: pwsh
+        env:
+          QtPath: ../Qt/${{matrix.qt_ver}}/${{matrix.qt_arch}}
+        run: |
+          $qt_Path=${env:QtPath}
+          echo "::set-env name=Qt5_Dir::$qt_Path"
+          echo "::add-path::$qt_Path/bin"
       - name: Install Qt
+        if: steps.MacosCacheQt.outputs.cache-hit != 'true'
         uses: jurplel/install-qt-action@v2
         with:
           version: ${{ matrix.qt_ver }}
@@ -48,7 +58,7 @@ jobs:
       - name: package
         if: startsWith(github.event.ref, 'refs/tags/')
         run: |
-          macdeployqt server/release/${targetName}.app -qmldir=. -verbose=1 -dmg
+          macdeployqt server/${targetName}.app -qmldir=. -verbose=1 -dmg
       - name: uploadRelease
         if: startsWith(github.event.ref, 'refs/tags/')
         env:
