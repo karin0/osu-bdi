@@ -28,12 +28,7 @@ void DIServer::init_ui(const QString &lang) {
     constexpr int pw = 710, ph = 140, side = 30;
 
 #ifndef Q_OS_WIN
-    int row, column, row_span, column_span;
-
-    // ui->songs_detect_button->setDisabled(true);
-    // ui->songs_detect_button->setToolTip(tr("Only compatible with Windows"));
-
-    int browse_index;
+    int row, column, row_span, column_span, browse_index;
     for (int i = 0, n = ui->grid_layout->count(); i < n; ++i) {
         auto *item = ui->grid_layout->itemAt(i);
         if (!item)
@@ -63,7 +58,6 @@ void DIServer::init_ui(const QString &lang) {
     const QVector<QPair<QString, QString>> &langs = get_languages();
     for (int i = 0; i < langs.length(); ++i) {
         dbg(translator);
-        // ui->lang_combo->addItem(translator->translate("QObject", langs[i].second.toUtf8().constData()), langs[i].first);
         ui->lang_combo->addItem(langs[i].second, langs[i].first);
         if (!index_set && langs[i].first.toLower() == lang) {
             ui->lang_combo->setCurrentIndex(i);
@@ -148,8 +142,7 @@ void DIServer::on_about_button_clicked() {
 }
 
 void DIServer::on_get_userscript_button_clicked() {
-    // todo: open some page
-    QDesktopServices::openUrl(QUrl(QStringLiteral("https://www.baidu.com")));
+    QDesktopServices::openUrl(QUrl(QStringLiteral("https://greasyfork.org/scripts/407062-osu-beatmap-downloaded-indicator")));
 }
 
 void DIServer::lang_changed_handler(int index) {
@@ -174,8 +167,5 @@ void DIServer::lang_changed_handler(int index) {
     ui->retranslateUi(this);
     refresh_songs_tip();
     refresh_port_tip();
-    // const QVector<QPair<QString, QString>> &langs = languages();
-    // for (int i = 0, n = ui->lang_combo->count(); i < n; ++i)
-    //     ui->lang_combo->setItemText(i, translator->translate("QObject", langs[i].second.toUtf8().constData()));
     update_lang(lang);
 }
