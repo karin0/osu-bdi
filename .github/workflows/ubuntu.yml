@@ -61,6 +61,6 @@ jobs:
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: ./server/release/${{ env.targetName }}
+          file: ./server/${{ env.targetName }}
           asset_name: ${{ env.archiveName }}
           tag: ${{ github.ref }}
