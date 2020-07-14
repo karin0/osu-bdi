@@ -6,12 +6,6 @@
 #include <QWidget>
 #include <QPair>
 
-/*
-const QString ok_svg = QStringLiteral(":/svgs/red.svg"),
-              warning_svg = QStringLiteral(":/svgs/exclamation-triangle.svg"),
-              error_svg = QStringLiteral(":/svgs/times.svg");
-*/
-
 const QString port_default_str = QStringLiteral("35677"), port_max_str = QStringLiteral("65535");
 
 static QByteArray generate_indicator(const QByteArray &color) {
