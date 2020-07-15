@@ -97,10 +97,13 @@ jobs:
           Remove-Item -Recurse -Force ${env:archiveName}\bearer, ${env:archiveName}\iconengines, ${env:archiveName}\imageformats, ${env:archiveName}\translations
           Remove-Item -Force ${env:archiveName}\D3Dcompiler_47.dll, ${env:archiveName}\libEGL.dll, ${env:archiveName}\libGLESv2.dll, ${env:archiveName}\opengl32sw.dll
           if (Test-Path ${env:archiveName}\vc_redist.x64.exe) {
-            Move-Item -Force -Path ${env:archiveName}\vc_redist.x64.exe -Destination .
+            $vcr = "vc_redist.x64.exe"
           } else {
-            Move-Item -Force -Path ${env:archiveName}\vc_redist.x86.exe -Destination .
+            $vcr = "vc_redist.x86.exe"
           }
+          echo "::set-env name=vcRedistFile::$vcr"
+          Write-Host 'vcRedistFile:'${env:vcRedistFile}
+          Move-Item -Force -Path ${env:archiveName}\$vcr -Destination .
           # 打包 zip
           Compress-Archive -Path ${env:archiveName} ${env:archiveName}'.zip'
           # 记录环境变量 packageName 给后续 step
