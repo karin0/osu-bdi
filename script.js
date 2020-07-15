@@ -5,12 +5,12 @@
 // @name:zh-TW         osu! Beatmap Downloaded Indicator
 
 // @namespace          https://github.com/karin0/osu-bdi
-// @version            0.2.2
+// @version            0.2.3
 
 // @description        Indicate if an osu! beatmap in beatmap listing has been installed in the local game. An additional local daemon is required.
-// @description:zh     在官网的谱面列表上指示出本地已安装的谱面
-// @description:zh-CN  在官网的谱面列表上指示出本地已安装的谱面
-// @description:zh-TW  在官網的圖譜列表上指示出本地已安裝的圖譜
+// @description:zh     在官网的谱面列表上指示出本地已安装的谱面，需要外部服务端
+// @description:zh-CN  在官网的谱面列表上指示出本地已安装的谱面，需要外部服务端
+// @description:zh-TW  在官網的圖譜列表上指示出本地已安裝的圖譜，需要外部服務端
 
 // @author             karin0
 // @icon               https://osu.ppy.sh/favicon.ico
