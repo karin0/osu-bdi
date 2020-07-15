@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         osu! Beatmap Downloaded Indicator
 // @namespace    https://github.com/karin0/osu-bdi
-// @version      0.1
-// @description  Indicate if a beatmap in the beatmap listing is downloaded on the device. An additional local daemon is required.
+// @version      0.2
+// @description  Indicate if an osu! beatmap in beatmap listing has been installed in the local game. An additional local daemon is required.
 // @author       karin0
 // @icon         https://osu.ppy.sh/favicon.ico
 // @include      http*://osu.ppy.sh/beatmapsets*
@@ -20,8 +20,8 @@
         }
         .di-input {
             width: 6em;
-            height: 2.4em;
-            margin: auto 0.3em auto auto;
+            height: 2.2em;
+            margin: auto;
             padding: 10px;
             background-color: hsl(var(--hsl-b2));
             border: 1px solid hsl(var(--hsl-b4));
@@ -35,6 +35,7 @@
             align-items: center;
             display: flex;
             color: #fff;
+            margin: auto 0.6em;
         }
     `;
 
@@ -155,7 +156,7 @@
             socket.onopen = on_open;
             socket.onclose = connect;
         }
-        setTimeout(function () { retry(id) }, 1000);
+        setTimeout(() => retry(id), 1000);
     }
 
     function connect() {

@@ -2,7 +2,7 @@ QT += core gui widgets websockets svg
 
 DEFINES += QT_DEPRECATED_WARNINGS
 
-CONFIG += c++17 strict_c++ optimize_full lrelease embed_translations winqtdeploy
+CONFIG += c++17 release strict_c++ optimize_full lrelease embed_translations
 
 SOURCES += \
     src/config.cpp \
@@ -28,8 +28,3 @@ TRANSLATIONS += \
     translations/en.ts
 
 msvc:QMAKE_CXXFLAGS += /source-charset:utf-8 /execution-charset:utf-8
-
-# Default rules for deployment.
-qnx: target.path = /tmp/$${TARGET}/bin
-else: unix:!android: target.path = /opt/$${TARGET}/bin
-!isEmpty(target.path): INSTALLS += target

@@ -95,7 +95,13 @@ jobs:
           # 拷贝依赖
           windeployqt --qmldir . ${env:archiveName}\${env:targetName}
           Remove-Item -Recurse -Force ${env:archiveName}\bearer, ${env:archiveName}\iconengines, ${env:archiveName}\imageformats, ${env:archiveName}\translations
-          Remove-Item -Force ${env:archiveName}\D3Dcompiler_47.dll, ${env:archiveName}\libEGL.dll, ${env:archiveName}\libGLESv2.dll, ${env:archiveName}\opengl32sw.dll, ${env:archiveName}\vc_redist*
+          Remove-Item -Force ${env:archiveName}\D3Dcompiler_47.dll, ${env:archiveName}\libEGL.dll, ${env:archiveName}\libGLESv2.dll, ${env:archiveName}\opengl32sw.dll
+          if (Test-Path ${env:archiveName}\vc_redist.x64.exe) {
+            echo "::set-env name=vcRedistFile::vc_redist.x64.exe"
+          } else {
+            echo "::set-env name=vcRedistFile::vc_redist.x86.exe"
+          }
+          Move-Item -Force -Path ${env:archiveName}\${env:vcRedistFile} -Destination .
           # 打包 zip
           Compress-Archive -Path ${env:archiveName} ${env:archiveName}'.zip'
           # 记录环境变量 packageName 给后续 step
@@ -110,5 +116,14 @@ jobs:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: ./${{ env.packageName }}.zip
           asset_name: ${{ env.packageName }}.zip
+          tag: ${{ github.ref }}
+          overwrite: true
+      - name: uploadRelease_vc_redist
+        if: startsWith(github.event.ref, 'refs/tags/')
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: ./${{ env.vcRedistFile }}
+          asset_name: ${{ env.vcRedistFile }}
           tag: ${{ github.ref }}
           overwrite: true
