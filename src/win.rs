@@ -11,8 +11,7 @@ use std::path::PathBuf;
 fn get_osu_command() -> io::Result<String> {
     let it = RegKey::predef(HKEY_CLASSES_ROOT)
         .open_subkey("osu\\shell\\open\\command")?;
-    let s: String = it.get_value("")?;
-    Ok(s)
+    it.get_value("")
 }
 
 fn get_osu_path() -> Option<String> {
