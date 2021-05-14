@@ -3,6 +3,7 @@ mod handler;
 mod dispatch;
 mod win;
 
+use log::error;
 use log::info;
 
 use dispatch::Event;
@@ -25,7 +26,14 @@ fn listen(addr: &str, port: u16, tx: Sender<Event>) {
     for stream in server.incoming() {
         if let Ok(stream) = stream {
             info!("New connection from {:?}", stream);
-            tx.send(Event::Connection(accept(stream).unwrap())).unwrap();
+            match accept(stream) {
+                Ok(conn) => {
+                    tx.send(Event::Connection(conn)).unwrap();
+                },
+                Err(e) => {
+                    error!("Failed to establish connection: {}", e)
+                }
+            }
         }
     }
 }
