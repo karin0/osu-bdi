@@ -7,6 +7,7 @@ use notify::{EventKind};
 use notify::event::{CreateKind, ModifyKind, RemoveKind, RenameMode};
 use std::path::PathBuf;
 use std::sync::mpsc::Receiver;
+use std::ffi::OsStr;
 
 fn to_id(path: PathBuf) -> Option<String> {
     match path.file_name() {
@@ -30,9 +31,13 @@ fn dispatch_create(handler: &mut Handler, mut paths: Vec<PathBuf>) {
     }
 }
 
+fn not_osz(path: &PathBuf) -> bool {
+    path.extension() != Some(OsStr::new("osz"))
+}
+
 fn dispatch_remove(handler: &mut Handler, paths: Vec<PathBuf>) {
     if !paths.is_empty() {
-        let paths: Vec<String> = paths.into_iter().filter_map(to_id).collect();
+        let paths: Vec<String> = paths.into_iter().filter(not_osz).filter_map(to_id).collect();
         if !paths.is_empty() {
             handler.remove(paths);
         }
