@@ -72,7 +72,7 @@ fn main() {
         match win::find_songs_path() {
             Some(s) => s,
             _ => {
-                eprintln!("Cannot detect your osu! installation, please specify the Songs directory by --songs_path");
+                eprintln!("Cannot detect your osu! installation, please specify the Songs directory by --songs-path");
                 std::process::exit(1);
             }
         }
