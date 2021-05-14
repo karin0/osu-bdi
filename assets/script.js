@@ -5,12 +5,9 @@
 // @name:zh-TW         osu! Beatmap Downloaded Indicator
 
 // @namespace          https://github.com/karin0/osu-bdi
-// @version            0.2.3
+// @version            0.3
 
-// @description        Indicate if an osu! beatmap in beatmap listing has been installed in the local game. An additional local daemon is required.
-// @description:zh     在官网的谱面列表上指示出本地已安装的谱面，需要外部服务端
-// @description:zh-CN  在官网的谱面列表上指示出本地已安装的谱面，需要外部服务端
-// @description:zh-TW  在官網的圖譜列表上指示出本地已安裝的圖譜，需要外部服務端
+// @description        Dim the beatmaps you've already owned in game in the official osu! beatmap listing
 
 // @author             karin0
 // @icon               https://osu.ppy.sh/favicon.ico
@@ -120,16 +117,16 @@
     status.target = '_blank';
 
     function on_message(e) {
-        let mode;
+        let removing = false;
         console.log('received', e.data);
         for (const s of e.data.split(' ')) {
             const id = Number(s);
             if (id)
-                (mode ? add : remove)(id);
+                (removing ? remove : add)(id);
             else if (s == '+')
-                mode = 1;
+                removing = false;
             else if (s == '-')
-                mode = 0;
+                removing = true;
             else {
                 for (const id of set)
                     set_undownloaded(map[id]);
