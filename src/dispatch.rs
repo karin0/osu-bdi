@@ -3,19 +3,14 @@ use crate::handler::{self, Handler, Conn};
 use log::debug;
 use log::info;
 
-use notify::EventKind;
+use notify::{Event, EventKind};
 use notify::event::{CreateKind, ModifyKind, RemoveKind, RenameMode};
+use crossbeam_channel::{select, Receiver};
 use std::path::PathBuf;
-use std::sync::mpsc::Receiver;
 use std::ffi::OsStr;
 
 fn to_id(path: PathBuf) -> Option<String> {
     path.file_name().and_then(handler::to_id)
-}
-
-pub enum Event {
-    Fs(notify::Event),
-    Connection(Conn)
 }
 
 fn dispatch_create(handler: &mut Handler, mut paths: Vec<PathBuf>) {
@@ -28,13 +23,11 @@ fn dispatch_create(handler: &mut Handler, mut paths: Vec<PathBuf>) {
     }
 }
 
-fn not_osz(path: &PathBuf) -> bool {
-    path.extension() != Some(OsStr::new("osz"))
-}
-
 fn dispatch_remove(handler: &mut Handler, paths: Vec<PathBuf>) {
     if !paths.is_empty() {
-        let paths: Vec<String> = paths.into_iter().filter(not_osz).filter_map(to_id).collect();
+        let paths: Vec<String> = paths.into_iter().filter(|buf| {
+            buf.extension() != Some(OsStr::new("osz"))
+        }).filter_map(to_id).collect();
         if !paths.is_empty() {
             handler.remove(paths);
         }
@@ -55,32 +48,38 @@ fn dispatch_rename(handler: &mut Handler, paths: Vec<PathBuf>) {
     }
 }
 
-pub fn work(hdr: &mut Handler, rx: Receiver<Event>) {
+pub fn work(hdr: &mut Handler, fs_rx: Receiver<Event>, conn_rx: Receiver<Conn>) {
     info!("Worker started");
     loop {
-        match rx.recv() {
-            Ok(Event::Fs(event)) => {
-                debug!("Fs event: {:?}", event);
-                let paths = event.paths;
-                match event.kind {
-                    EventKind::Create(CreateKind::Any) |
-                    EventKind::Create(CreateKind::Folder) |
-                    EventKind::Modify(ModifyKind::Name(RenameMode::To))
-                        => dispatch_create(hdr, paths),
-                    EventKind::Remove(RemoveKind::Any) |
-                    EventKind::Remove(RemoveKind::Folder) |
-                    EventKind::Modify(ModifyKind::Name(RenameMode::From))
-                        => dispatch_remove(hdr, paths),
-                    EventKind::Modify(ModifyKind::Name(RenameMode::Both))
-                        => dispatch_rename(hdr, paths),
-                    _ => ()
+        select! {
+            recv(fs_rx) -> res => match res {
+                Ok(event) => {
+                    debug!("Fs event: {:?}", event);
+                    let paths = event.paths;
+                    match event.kind {
+                        EventKind::Create(CreateKind::Any) |
+                        EventKind::Create(CreateKind::Folder) |
+                        EventKind::Modify(ModifyKind::Name(RenameMode::To))
+                            => dispatch_create(hdr, paths),
+                        EventKind::Remove(RemoveKind::Any) |
+                        EventKind::Remove(RemoveKind::Folder) |
+                        EventKind::Modify(ModifyKind::Name(RenameMode::From))
+                            => dispatch_remove(hdr, paths),
+                        EventKind::Modify(ModifyKind::Name(RenameMode::Both))
+                            => dispatch_rename(hdr, paths),
+                        _ => ()
+                    }
+                },
+                _ => {
+                    return;
                 }
             },
-            Ok(Event::Connection(conn)) => {
-                hdr.add_conn(conn);
-            },
-            _ => {
-                return;
+            recv(conn_rx) -> res => match res {
+                Ok(conn) =>
+                    hdr.add_conn(conn),
+                _ => {
+                    return;
+                }
             }
          }
     }

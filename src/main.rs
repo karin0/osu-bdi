@@ -3,9 +3,7 @@ mod handler;
 mod dispatch;
 mod win;
 
-use dispatch::Event;
-use handler::Handler;
-
+use handler::{Handler, Conn};
 use log::error;
 use log::info;
 
@@ -14,28 +12,26 @@ use tungstenite::server::accept;
 use env_logger::{Builder, Env};
 use clap::Clap;
 use chrono::Local;
+use crossbeam_channel::{Sender, unbounded};
 
 use std::io::Write;
 use std::net::TcpListener;
-use std::sync::mpsc::{Sender, channel};
 use std::thread::spawn;
 use std::panic;
 use std::process;
 
-fn listen(addr: &str, port: u16, tx: Sender<Event>) {
+fn listen(addr: &str, port: u16, tx: Sender<Conn>) {
     let server = TcpListener::bind((addr, port)).unwrap();
     info!("Listening on {}", server.local_addr().unwrap());
-    for stream in server.incoming() {
-        if let Ok(stream) = stream {
-            if let Ok(addr) = stream.peer_addr() {
-                info!("Connecting: {}", addr);
-                match accept(stream) {
-                    Ok(conn) => {
-                        tx.send(Event::Connection(conn)).unwrap();
-                    },
-                    Err(e) => {
-                        error!("Websocket handshake failed: {}", e)
-                    }
+    for stream in server.incoming().flatten() {
+        if let Ok(addr) = stream.peer_addr() {
+            info!("Connecting: {}", addr);
+            match accept(stream) {
+                Ok(conn) => {
+                    tx.send(conn).unwrap();
+                },
+                Err(e) => {
+                    error!("Websocket handshake failed: {}", e)
                 }
             }
         }
@@ -84,13 +80,14 @@ fn main() {
         process::exit(1);
     }));
 
-    let (tx, rx) = channel();
-    let mut watcher = watch::watch(&path, tx.clone()).unwrap();
+    let (fs_tx, fs_rx) = unbounded();
+    let (conn_tx, conn_rx) = unbounded();
+    let mut watcher = watch::watch(&path, fs_tx).unwrap();
     spawn(move || {
-        listen(&addr, port, tx);
+        listen(&addr, port, conn_tx);
     });
 
     let mut handler = Handler::from(&path).unwrap();
-    dispatch::work(&mut handler, rx);
+    dispatch::work(&mut handler, fs_rx, conn_rx);
     watcher.unwatch(&path).unwrap();
 }

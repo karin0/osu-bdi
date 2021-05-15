@@ -1,5 +1,5 @@
 #[cfg(windows)]
-mod win {
+mod sys {
     use log::error;
     use log::info;
     use log::debug;
@@ -20,10 +20,7 @@ mod win {
                 debug!("Found in registry: {}", s);
                 match s.chars().next() {
                     Some('"') => {
-                        match s[1..].find('"') {
-                            Some(p) => Some(s[1..p + 1].to_owned()),
-                            _ => None
-                        }
+                        s[1..].find('"').map(|p| s[1..p + 1].to_owned())
                     },
                     _ => match s.find(' ') {
                         Some(p) => Some(s[0..p].to_owned()),
@@ -50,7 +47,7 @@ mod win {
 
 #[cfg(windows)]
 pub fn find_songs_path() -> Option<String> {
-    win::get_songs_path()
+    sys::get_songs_path()
 }
 
 #[cfg(not(windows))]
