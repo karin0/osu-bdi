@@ -10,10 +10,7 @@ use std::sync::mpsc::Receiver;
 use std::ffi::OsStr;
 
 fn to_id(path: PathBuf) -> Option<String> {
-    match path.file_name() {
-        Some(name) => handler::to_id(name),
-        None => None
-    }
+    path.file_name().and_then(handler::to_id)
 }
 
 pub enum Event {
@@ -63,17 +60,20 @@ pub fn work(hdr: &mut Handler, rx: Receiver<Event>) {
     loop {
         match rx.recv() {
             Ok(Event::Fs(event)) => {
-                debug!("fs event: {:?}", event);
+                debug!("Fs event: {:?}", event);
                 let paths = event.paths;
                 match event.kind {
-                    EventKind::Create(CreateKind::Any) => dispatch_create(hdr, paths),
-                    EventKind::Create(CreateKind::Folder) => dispatch_create(hdr, paths),
-                    EventKind::Modify(ModifyKind::Name(RenameMode::From)) => dispatch_remove(hdr, paths),
-                    EventKind::Modify(ModifyKind::Name(RenameMode::To)) => dispatch_create(hdr, paths),
-                    EventKind::Modify(ModifyKind::Name(RenameMode::Both)) => dispatch_rename(hdr, paths),
-                    EventKind::Remove(RemoveKind::Any) => dispatch_remove(hdr, paths),
-                    EventKind::Remove(RemoveKind::Folder) => dispatch_remove(hdr, paths),
-                    _ => {}
+                    EventKind::Create(CreateKind::Any) |
+                    EventKind::Create(CreateKind::Folder) |
+                    EventKind::Modify(ModifyKind::Name(RenameMode::To))
+                        => dispatch_create(hdr, paths),
+                    EventKind::Remove(RemoveKind::Any) |
+                    EventKind::Remove(RemoveKind::Folder) |
+                    EventKind::Modify(ModifyKind::Name(RenameMode::From))
+                        => dispatch_remove(hdr, paths),
+                    EventKind::Modify(ModifyKind::Name(RenameMode::Both))
+                        => dispatch_rename(hdr, paths),
+                    _ => ()
                 }
             },
             Ok(Event::Connection(conn)) => {

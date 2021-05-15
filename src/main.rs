@@ -19,19 +19,23 @@ use std::io::Write;
 use std::net::TcpListener;
 use std::sync::mpsc::{Sender, channel};
 use std::thread::spawn;
+use std::panic;
+use std::process;
 
 fn listen(addr: &str, port: u16, tx: Sender<Event>) {
     let server = TcpListener::bind((addr, port)).unwrap();
-    info!("Listening on {}:{}", addr, port);
+    info!("Listening on {}", server.local_addr().unwrap());
     for stream in server.incoming() {
         if let Ok(stream) = stream {
-            info!("New connection from {:?}", stream);
-            match accept(stream) {
-                Ok(conn) => {
-                    tx.send(Event::Connection(conn)).unwrap();
-                },
-                Err(e) => {
-                    error!("Websocket handshake failed: {}", e)
+            if let Ok(addr) = stream.peer_addr() {
+                info!("Connecting: {}", addr);
+                match accept(stream) {
+                    Ok(conn) => {
+                        tx.send(Event::Connection(conn)).unwrap();
+                    },
+                    Err(e) => {
+                        error!("Websocket handshake failed: {}", e)
+                    }
                 }
             }
         }
@@ -58,7 +62,7 @@ fn main() {
         .format(|buf, rec| {
             writeln!(buf,
                 "{} [{}] {} ({})",
-                Local::now().format("%Y-%m-%d %H:%M:%S%z"),
+                Local::now().format("%Y-%m-%d %H:%M:%S%.3f%z"),
                 rec.level(),
                 rec.args(),
                 rec.module_path_static().unwrap_or("?")
@@ -67,15 +71,20 @@ fn main() {
         .init();
 
     let opts = Opts::parse();
-
-    let (tx, rx) = channel();
     let path = opts.songs_dir.or_else(win::find_songs_path).unwrap_or_else(|| {
         eprintln!("Cannot detect your osu! installation, please specify your Songs directory by --songs-path");
-        std::process::exit(1);
+        process::exit(1);
     });
     let addr = opts.addr;
     let port = opts.port;
 
+    let hook = panic::take_hook();
+    panic::set_hook(Box::new(move |info| {
+        hook(info);
+        process::exit(1);
+    }));
+
+    let (tx, rx) = channel();
     let mut watcher = watch::watch(&path, tx.clone()).unwrap();
     spawn(move || {
         listen(&addr, port, tx);

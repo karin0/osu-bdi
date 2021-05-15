@@ -1,4 +1,5 @@
 use log::info;
+use log::debug;
 
 use tungstenite::{Message, WebSocket};
 use retain_mut::RetainMut;
@@ -63,11 +64,13 @@ pub struct Handler {
 impl Handler {
     fn send(&mut self, msg: &str) {
         self.conns.retain_mut(|ws: &mut Conn| {
-            let r = ws.can_write() && ws.write_message(Message::text(msg)).is_ok();
-            if !r {
-                info!("Dropping connection: {:?}", ws);
+            match ws.write_message(Message::text(msg)) {
+                Err(e) => {
+                    debug!("Disconnecting: {:?}: {}", ws.get_ref(), e);
+                    false
+                },
+                _ => true
             }
-            r
         });
     }
 

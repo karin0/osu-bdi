@@ -32,7 +32,7 @@ mod win {
                 }
             },
             Err(e) => {
-                error!("Error reading registy: {:?}", e);
+                error!("Error reading the registry: {:?}", e);
                 None
             }
         }
