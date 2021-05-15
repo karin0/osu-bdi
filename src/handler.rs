@@ -107,7 +107,7 @@ impl Handler {
         }
     }
 
-    pub fn new(path: &str) -> io::Result<Handler> {
+    pub fn from(path: &str) -> io::Result<Handler> {
         let mut ids = HashSet::new();
         for ent in read_dir(path)? {
             let ent = ent?;

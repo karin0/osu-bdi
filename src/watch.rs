@@ -2,9 +2,7 @@ use crate::dispatch::Event;
 
 use log::info;
 use log::error;
-
 use notify::{Watcher, RecursiveMode, RecommendedWatcher, Result};
-
 use std::sync::mpsc::Sender;
 
 pub fn watch(path: &str, tx: Sender<Event>) -> Result<RecommendedWatcher> {

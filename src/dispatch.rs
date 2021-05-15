@@ -3,7 +3,7 @@ use crate::handler::{self, Handler, Conn};
 use log::debug;
 use log::info;
 
-use notify::{EventKind};
+use notify::EventKind;
 use notify::event::{CreateKind, ModifyKind, RemoveKind, RenameMode};
 use std::path::PathBuf;
 use std::sync::mpsc::Receiver;

@@ -3,11 +3,11 @@ mod handler;
 mod dispatch;
 mod win;
 
-use log::error;
-use log::info;
-
 use dispatch::Event;
 use handler::Handler;
+
+use log::error;
+use log::info;
 
 use notify::Watcher;
 use tungstenite::server::accept;
@@ -31,7 +31,7 @@ fn listen(addr: &str, port: u16, tx: Sender<Event>) {
                     tx.send(Event::Connection(conn)).unwrap();
                 },
                 Err(e) => {
-                    error!("Failed to establish connection: {}", e)
+                    error!("Websocket handshake failed: {}", e)
                 }
             }
         }
@@ -50,9 +50,10 @@ struct Opts {
 }
 
 fn main() {
-    Builder::from_env(Env::default()
-            .filter_or("BDI_LOG_LEVEL", "info")
-            .write_style_or("BDI_LOG_STYLE", "never")
+    Builder::from_env(
+            Env::default()
+                .filter_or("BDI_LOG_LEVEL", "info")
+                .write_style_or("BDI_LOG_STYLE", "never")
         )
         .format(|buf, rec| {
             writeln!(buf,
@@ -68,25 +69,19 @@ fn main() {
     let opts = Opts::parse();
 
     let (tx, rx) = channel();
-    let path = &opts.songs_dir.unwrap_or_else(|| {
-        match win::find_songs_path() {
-            Some(s) => s,
-            _ => {
-                eprintln!("Cannot detect your osu! installation, please specify the Songs directory by --songs-path");
-                std::process::exit(1);
-            }
-        }
+    let path = opts.songs_dir.or_else(win::find_songs_path).unwrap_or_else(|| {
+        eprintln!("Cannot detect your osu! installation, please specify your Songs directory by --songs-path");
+        std::process::exit(1);
     });
     let addr = opts.addr;
     let port = opts.port;
-    // let path = "D:\\programs-local\\osu!\\Songs";
 
-    let mut watcher = watch::watch(path, tx.clone()).unwrap();
+    let mut watcher = watch::watch(&path, tx.clone()).unwrap();
     spawn(move || {
         listen(&addr, port, tx);
     });
 
-    let mut handler = Handler::new(path).unwrap();
+    let mut handler = Handler::from(&path).unwrap();
     dispatch::work(&mut handler, rx);
-    watcher.unwatch(path).unwrap();
+    watcher.unwatch(&path).unwrap();
 }

@@ -8,14 +8,15 @@ mod win {
     use winreg::{RegKey, enums::HKEY_CLASSES_ROOT};
 
     fn get_osu_command() -> io::Result<String> {
-        let it = RegKey::predef(HKEY_CLASSES_ROOT)
-            .open_subkey("osu\\shell\\open\\command")?;
-        it.get_value("")
+        RegKey::predef(HKEY_CLASSES_ROOT)
+            .open_subkey("osu\\shell\\open\\command")?
+            .get_value("")
     }
 
     fn get_osu_path() -> Option<String> {
         match get_osu_command() {
             Ok(s) => {
+                let s = s.trim();
                 debug!("Found in registry: {}", s);
                 match s.chars().next() {
                     Some('"') => {
@@ -26,7 +27,7 @@ mod win {
                     },
                     _ => match s.find(' ') {
                         Some(p) => Some(s[0..p].to_owned()),
-                        _ => Some(s)
+                        _ => Some(s.to_owned())
                     }
                 }
             },
