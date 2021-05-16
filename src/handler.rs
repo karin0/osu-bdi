@@ -13,52 +13,29 @@ use std::collections::HashSet;
 pub type Conn = WebSocket<TcpStream>;
 
 pub fn to_id(s: &OsStr) -> Option<String> {
-    let s = s.to_string_lossy();
-    let mut it = s.chars();
-    let mut r = String::new();
-    loop {
-        if let Some(c) = it.next() {
-            if c.is_ascii_digit() {
-                r.push(c);
-                continue;
-            }
-        }
-        break;
-    }
+    let r: String = s.to_string_lossy()
+        .chars()
+        .take_while(char::is_ascii_digit)
+        .collect();
     if r.is_empty() {
         return None;
     }
     Some(r)
 }
 
-pub fn to_id_int(s: &OsStr) -> Option<u32> {
-    let s = s.to_string_lossy();
-    let mut it = s.chars();
-    let mut r;
-    if let Some(c) = it.next() {
-        if c.is_ascii_digit() {
-            r = c.to_digit(10).unwrap();
-        } else {
-            return None;
-        }
-    } else {
-        return None;
-    }
-    loop {
-        if let Some(c) = it.next() {
-            if c.is_ascii_digit() {
-                r = r * 10 + c.to_digit(10).unwrap();
-                continue;
-            }
-        }
-        break;
-    }
-    Some(r)
+type Id = u32;
+
+pub fn to_id_int(s: &OsStr) -> Option<Id> {
+    s.to_string_lossy()
+        .chars()
+        .take_while(char::is_ascii_digit)
+        .map(|c| c as Id - '0' as Id)
+        .reduce(|a, b| {a * 10 + b})
 }
 
 pub struct Handler {
     conns: Vec<Conn>,
-    ids: HashSet<u32>
+    ids: HashSet<Id>
 }
 
 impl Handler {
@@ -86,7 +63,7 @@ impl Handler {
     pub fn create(&mut self, ids: Vec<String>) {
         info!("Adding beatmap(s): {:?}", ids);
         for id in &ids {
-            self.ids.insert(id.parse::<u32>().unwrap());
+            self.ids.insert(id.parse::<Id>().unwrap());
         }
         self.notify(ids, '+')
     }
@@ -94,7 +71,7 @@ impl Handler {
     pub fn remove(&mut self, ids: Vec<String>) {
         info!("Removing beatmap(s): {:?}", ids);
         for id in &ids {
-            self.ids.remove(&id.parse::<u32>().unwrap());
+            self.ids.remove(&id.parse::<Id>().unwrap());
         }
         self.notify(ids, '-')
     }

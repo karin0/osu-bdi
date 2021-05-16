@@ -581,6 +581,7 @@ dependencies = [
  "clap",
  "crossbeam-channel 0.4.4",
  "env_logger",
+ "lazy_static",
  "log",
  "notify",
  "retain_mut",

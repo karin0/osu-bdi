@@ -6,6 +6,8 @@ use log::info;
 use notify::{Event, EventKind};
 use notify::event::{CreateKind, ModifyKind, RemoveKind, RenameMode};
 use crossbeam_channel::{select, Receiver};
+use lazy_static::lazy_static;
+
 use std::path::PathBuf;
 use std::ffi::OsStr;
 
@@ -23,10 +25,14 @@ fn dispatch_create(handler: &mut Handler, mut paths: Vec<PathBuf>) {
     }
 }
 
+lazy_static! {
+    static ref SOME_OSZ: Option<&'static OsStr> = Some(OsStr::new("osz"));
+}
+
 fn dispatch_remove(handler: &mut Handler, paths: Vec<PathBuf>) {
     if !paths.is_empty() {
         let paths: Vec<String> = paths.into_iter().filter(|buf| {
-            buf.extension() != Some(OsStr::new("osz"))
+            buf.extension() != *SOME_OSZ
         }).filter_map(to_id).collect();
         if !paths.is_empty() {
             handler.remove(paths);
