@@ -68,7 +68,7 @@ fn main() {
 
     let opts = Opts::parse();
     let path = opts.songs_dir.or_else(win::find_songs_path).unwrap_or_else(|| {
-        eprintln!("Cannot detect your osu! installation, please specify your Songs directory by --songs-path");
+        eprintln!("Cannot detect your osu! installation, please specify your Songs directory by --songs-dir");
         process::exit(1);
     });
     let addr = opts.addr;
