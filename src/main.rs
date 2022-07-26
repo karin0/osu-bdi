@@ -51,7 +51,7 @@ struct Opts {
 }
 
 fn main() {
-    if let Err(_) = std::env::var("RUST_LOG") {
+    if std::env::var("RUST_LOG").is_err() {
         std::env::set_var("RUST_LOG", "info");
     }
     pretty_env_logger::init_timed();
@@ -78,12 +78,12 @@ fn main() {
 
     let (fs_tx, fs_rx) = unbounded();
     let (conn_tx, conn_rx) = unbounded();
-    let mut watcher = watch::watch(&path, fs_tx).unwrap();
+    let mut watcher = watch::watch(path, fs_tx).unwrap();
     spawn(move || {
         listen(&addr, port, conn_tx);
     });
 
-    let mut handler = Handler::from(&path).unwrap();
+    let mut handler = Handler::from(path).unwrap();
     dispatch::work(&mut handler, fs_rx, conn_rx);
-    watcher.unwatch(&path).unwrap();
+    watcher.unwatch(path).unwrap();
 }
