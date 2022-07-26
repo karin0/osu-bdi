@@ -9,12 +9,9 @@ use log::info;
 
 use notify::Watcher;
 use tungstenite::accept;
-use env_logger::{Builder, Env};
 use clap::Parser;
-use chrono::Local;
 use crossbeam_channel::{Sender, unbounded};
 
-use std::io::Write;
 use std::net::TcpListener;
 use std::path::PathBuf;
 use std::thread::spawn;
@@ -43,31 +40,21 @@ fn listen(addr: &str, port: u16, tx: Sender<Conn>) {
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
 struct Opts {
-    #[clap(short, long = "addr", default_value = "127.0.0.1")]
+    #[clap(short, long, value_parser, default_value_t = String::from("127.0.0.1"))]
     addr: String,
-    #[clap(short, long, default_value = "35677")]
+
+    #[clap(short, long, value_parser, default_value_t = 35677)]
     port: u16,
 
-    #[clap(short, long)]
+    #[clap(short, long, value_parser)]
     songs_dir: Option<PathBuf>
 }
 
 fn main() {
-    Builder::from_env(
-            Env::default()
-                .filter_or("BDI_LOG_LEVEL", "info")
-                .write_style_or("BDI_LOG_STYLE", "never")
-        )
-        .format(|buf, rec| {
-            writeln!(buf,
-                "{} [{}] {} ({})",
-                Local::now().format("%Y-%m-%d %H:%M:%S%.3f%z"),
-                rec.level(),
-                rec.args(),
-                rec.module_path_static().unwrap_or("?")
-            )
-        })
-        .init();
+    if let Err(_) = std::env::var("RUST_LOG") {
+        std::env::set_var("RUST_LOG", "info");
+    }
+    pretty_env_logger::init_timed();
 
     let opts = Opts::parse();
     let path: &Path = match &opts.songs_dir {

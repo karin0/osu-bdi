@@ -1,6 +1,6 @@
 [package]
 name = "osu-bdi"
-version = "0.1.2"
+version = "0.2.0"
 authors = ["'karin0' <'karin0@gmx.com'>"]
 edition = "2018"
 
@@ -10,7 +10,7 @@ edition = "2018"
 chrono = "0"
 clap = { version = "3", features = ["derive"] }
 crossbeam-channel = "0"
-env_logger = "0"
+pretty_env_logger = "0"
 lazy_static = "1"
 log = "0"
 notify = "5.0.0-pre.15"
