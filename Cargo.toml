@@ -18,3 +18,7 @@ tungstenite = "0"
 
 [target.'cfg(windows)'.dependencies]
 winreg = "0"
+
+[profile.release]
+strip = true
+lto = true
