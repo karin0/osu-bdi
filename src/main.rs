@@ -8,17 +8,19 @@ use log::error;
 use log::info;
 
 use notify::Watcher;
-use tungstenite::server::accept;
+use tungstenite::accept;
 use env_logger::{Builder, Env};
-use clap::Clap;
+use clap::Parser;
 use chrono::Local;
 use crossbeam_channel::{Sender, unbounded};
 
 use std::io::Write;
 use std::net::TcpListener;
+use std::path::PathBuf;
 use std::thread::spawn;
 use std::panic;
 use std::process;
+use std::path::Path;
 
 fn listen(addr: &str, port: u16, tx: Sender<Conn>) {
     let server = TcpListener::bind((addr, port)).unwrap();
@@ -38,7 +40,8 @@ fn listen(addr: &str, port: u16, tx: Sender<Conn>) {
     }
 }
 
-#[derive(Clap)]
+#[derive(Parser, Debug)]
+#[clap(author, version, about, long_about = None)]
 struct Opts {
     #[clap(short, long = "addr", default_value = "127.0.0.1")]
     addr: String,
@@ -46,7 +49,7 @@ struct Opts {
     port: u16,
 
     #[clap(short, long)]
-    songs_dir: Option<String>
+    songs_dir: Option<PathBuf>
 }
 
 fn main() {
@@ -67,10 +70,16 @@ fn main() {
         .init();
 
     let opts = Opts::parse();
-    let path = opts.songs_dir.or_else(win::find_songs_path).unwrap_or_else(|| {
-        eprintln!("Cannot detect your osu! installation, please specify your Songs directory by --songs-dir");
-        process::exit(1);
-    });
+    let path: &Path = match &opts.songs_dir {
+        Some(s) => s,
+        None => {
+            let t = Box::leak(win::find_songs_path().unwrap_or_else(|| {
+                eprintln!("Cannot detect your osu! installation, please specify your Songs directory by --songs-dir");
+                process::exit(1);
+            }).into_boxed_str());
+            (*t).as_ref()
+        }
+    };
     let addr = opts.addr;
     let port = opts.port;
 

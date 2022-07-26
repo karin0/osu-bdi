@@ -7,15 +7,14 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-chrono = "0.4"
-clap = "3.0.0-beta.2"
-crossbeam-channel = "0.4.0"
-env_logger = "0.8.3"
-lazy_static = "1.4.0"
-log = "0.4"
-notify = "5.0.0-pre.8"
-retain_mut = "0.1.3"
-tungstenite = "0.13.0"
+chrono = "0"
+clap = { version = "3", features = ["derive"] }
+crossbeam-channel = "0"
+env_logger = "0"
+lazy_static = "1"
+log = "0"
+notify = "5.0.0-pre.15"
+tungstenite = "0"
 
 [target.'cfg(windows)'.dependencies]
-winreg = "0.8"
+winreg = "0"

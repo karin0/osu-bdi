@@ -2,13 +2,13 @@ use log::info;
 use log::debug;
 
 use tungstenite::{Message, WebSocket};
-use retain_mut::RetainMut;
 
 use std::io;
 use std::fs::read_dir;
 use std::ffi::OsStr;
 use std::net::TcpStream;
 use std::collections::HashSet;
+use std::path::Path;
 
 pub type Conn = WebSocket<TcpStream>;
 
@@ -87,7 +87,7 @@ impl Handler {
         }
     }
 
-    pub fn from(path: &str) -> io::Result<Handler> {
+    pub fn from(path: &Path) -> io::Result<Handler> {
         let mut ids = HashSet::new();
         for ent in read_dir(path)? {
             let ent = ent?;
