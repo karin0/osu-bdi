@@ -61,16 +61,16 @@ impl Handler {
     }
 
     pub fn create(&mut self, ids: Vec<String>) {
-        info!("Adding beatmap(s): {:?}", ids);
         for id in &ids {
+            info!("Adding {}", id);
             self.ids.insert(id.parse::<Id>().unwrap());
         }
         self.notify(ids, '+')
     }
 
     pub fn remove(&mut self, ids: Vec<String>) {
-        info!("Removing beatmap(s): {:?}", ids);
         for id in &ids {
+            info!("Removing {}", id);
             self.ids.remove(&id.parse::<Id>().unwrap());
         }
         self.notify(ids, '-')
