@@ -5,7 +5,7 @@
 // @name:zh-TW         osu! Beatmap Downloaded Indicator
 
 // @namespace          https://github.com/karin0/osu-bdi
-// @version            0.3
+// @version            0.4
 
 // @description        Dim the beatmaps you've already owned in game in the official osu! beatmap listing
 
