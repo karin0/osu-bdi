@@ -118,8 +118,9 @@
 
     function on_message(e) {
         let removing = false;
-        console.log('received', e.data);
-        for (const s of e.data.split(' ')) {
+        const data = e.data.split(' ');
+        console.log('received', data.length, 'commands');
+        for (const s of data) {
             const id = Number(s);
             if (id)
                 (removing ? remove : add)(id);
