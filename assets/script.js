@@ -11,7 +11,7 @@
 
 // @author             karin0
 // @icon               https://osu.ppy.sh/favicon.ico
-// @include            http*://osu.ppy.sh/beatmapsets*
+// @match              http*://osu.ppy.sh/*
 // @grant              none
 // ==/UserScript==
 
@@ -198,19 +198,52 @@
                 }
     });
 
-    window.addEventListener('load', function () {
-        if (document.body.dataset.obdi)
+    // Store global elements to make init_dom idempotent, as navi_observer can be invoked
+    // multiple times when navigating.
+    let topbar = null;
+    function attach_topbar() {
+        const n = document.querySelector('div.nav2__colgroup');
+        if (topbar == n) {
             return;
-        document.body.dataset.obdi = 1;
+        }
+        if ((topbar = n)) {
+            topbar.appendChild(port_input);
+            topbar.appendChild(status);
+        }
+    }
 
+    let root = null;
+    function start_observe() {
+        const n = document.querySelector('div.osu-layout__row');
+        if (root == n) {
+            return;
+        }
+        root = n;
+        observer.disconnect();
+        console.log('observing', root);
+        if (root) {
+            observer.observe(root, {
+                childList: true, subtree: true
+            });
+        }
+    }
+
+    function init_dom() {
+        attach_topbar();
+        start_observe();
+    }
+
+    const navi_observer = new MutationObserver(init_dom);
+
+    window.addEventListener('load', function () {
         document.head.appendChild(css);
 
-        const topbar = document.querySelector('div.nav2__colgroup');
-        topbar.appendChild(port_input);
-        topbar.appendChild(status);
+        init_dom();
 
-        observer.observe(document.querySelector('div.osu-layout__row'), {
-            childList: true, subtree: true
+        // turbolinks does navigation by replacing the <body>, which invalidates the old observer.
+        // Observe childList of <html> to detect this.
+        navi_observer.observe(document.querySelector('html'), {
+            childList: true
         });
         for (const e of document.querySelectorAll('div.beatmapsets__item'))
             get_id(e);
