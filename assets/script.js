@@ -7,9 +7,12 @@
 // @namespace          https://github.com/karin0/osu-bdi
 // @version            0.4
 
-// @description        Dim the beatmaps you've already owned in game in the official osu! beatmap listing
-
+// @description        Dim the beatmaps that are already downloaded in the osu! beatmap listing.
+// @description:zh-cn  在 osu! 谱面列表页面中，暗化显示本地已下载的谱面。
+// @description:zh-tw  在 osu! 圖譜列表頁面中，暗化顯示本地已下載的圖譜。
+// @license            MIT
 // @author             karin0
+
 // @icon               https://osu.ppy.sh/favicon.ico
 // @match              http*://osu.ppy.sh/*
 // @grant              none
