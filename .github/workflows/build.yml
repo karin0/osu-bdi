@@ -1,0 +1,57 @@
+name: Build
+on: [push]
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: full
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    env:
+      RUSTFLAGS: "-C target-feature=+crt-static"
+      TARGET: x86_64-pc-windows-msvc
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions-rs/toolchain@v1
+        with:
+          target: ${{ env.TARGET }}
+          toolchain: stable
+          profile: minimal
+          default: true
+
+      - uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-win
+
+      - name: Update dependencies
+        uses: actions-rs/cargo@v1
+        with:
+          command: update
+
+      - name: Build x86_64-pc-windows-msvc
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --release --no-default-features
+
+      - uses: msys2/setup-msys2@v2
+
+      - name: Compress Binary
+        shell: msys2 {0}
+        run: |
+          FILE=osu-bdi-${GITHUB_SHA::7}-$TARGET.xz
+          echo "FILE=$FILE" >> $GITHUB_ENV
+          xz -cv target/release/osu-bdi.exe > $FILE
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: ${{ env.FILE }}
+          path: ${{ env.FILE }}
