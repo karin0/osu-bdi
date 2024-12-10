@@ -217,8 +217,8 @@
 
     let root = null;
     function start_observe() {
-        const n = document.querySelector('div.osu-layout__row');
-        if (root == n) {
+        const n = document.querySelector('div.beatmapsets__items');
+        if (!n || root == n) {
             return;
         }
         root = n;
