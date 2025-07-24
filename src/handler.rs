@@ -1,19 +1,20 @@
-use log::info;
 use log::debug;
+use log::info;
 
 use tungstenite::{Message, WebSocket};
 
-use std::io;
-use std::fs::read_dir;
-use std::ffi::OsStr;
-use std::net::TcpStream;
 use std::collections::HashSet;
+use std::ffi::OsStr;
+use std::fs::read_dir;
+use std::io;
+use std::net::TcpStream;
 use std::path::Path;
 
 pub type Conn = WebSocket<TcpStream>;
 
 pub fn to_id(s: &OsStr) -> Option<String> {
-    let r: String = s.to_string_lossy()
+    let r: String = s
+        .to_string_lossy()
         .chars()
         .take_while(char::is_ascii_digit)
         .collect();
@@ -30,25 +31,24 @@ pub fn to_id_int(s: &OsStr) -> Option<Id> {
         .chars()
         .take_while(char::is_ascii_digit)
         .map(|c| c as Id - '0' as Id)
-        .reduce(|a, b| {a * 10 + b})
+        .reduce(|a, b| a * 10 + b)
 }
 
 pub struct Handler {
     conns: Vec<Conn>,
-    ids: HashSet<Id>
+    ids: HashSet<Id>,
 }
 
 impl Handler {
     fn send(&mut self, msg: &str) {
-        self.conns.retain_mut(|ws: &mut Conn| {
-            match ws.write_message(Message::text(msg)) {
+        self.conns
+            .retain_mut(|ws: &mut Conn| match ws.send(Message::text(msg)) {
                 Err(e) => {
                     debug!("Disconnecting: {:?}: {}", ws.get_ref(), e);
                     false
-                },
-                _ => true
-            }
-        });
+                }
+                _ => true,
+            });
     }
 
     fn notify(&mut self, ids: Vec<String>, kind: char) {
@@ -62,7 +62,7 @@ impl Handler {
 
     pub fn create(&mut self, ids: Vec<String>) {
         for id in &ids {
-            info!("Adding {}", id);
+            info!("Adding {id}");
             self.ids.insert(id.parse::<Id>().unwrap());
         }
         self.notify(ids, '+')
@@ -70,7 +70,7 @@ impl Handler {
 
     pub fn remove(&mut self, ids: Vec<String>) {
         for id in &ids {
-            info!("Removing {}", id);
+            info!("Removing {id}");
             self.ids.remove(&id.parse::<Id>().unwrap());
         }
         self.notify(ids, '-')
@@ -82,7 +82,7 @@ impl Handler {
             msg.push(' ');
             msg.push_str(&id.to_string());
         }
-        if conn.write_message(Message::text(msg)).is_ok() {
+        if conn.send(Message::text(msg)).is_ok() {
             self.conns.push(conn);
         }
     }
@@ -101,7 +101,7 @@ impl Handler {
 
         Ok(Handler {
             conns: Vec::new(),
-            ids
+            ids,
         })
     }
 }

@@ -1,36 +1,36 @@
-mod watch;
-mod handler;
 mod dispatch;
+mod handler;
+mod watch;
 mod win;
 
-use handler::{Handler, Conn};
+use handler::{Conn, Handler};
 use log::error;
 use log::info;
 
+use clap::Parser;
+use crossbeam_channel::{unbounded, Sender};
 use notify::Watcher;
 use tungstenite::accept;
-use clap::Parser;
-use crossbeam_channel::{Sender, unbounded};
 
 use std::net::TcpListener;
-use std::path::PathBuf;
-use std::thread::spawn;
 use std::panic;
-use std::process;
 use std::path::Path;
+use std::path::PathBuf;
+use std::process;
+use std::thread::spawn;
 
 fn listen(addr: &str, port: u16, tx: Sender<Conn>) {
     let server = TcpListener::bind((addr, port)).unwrap();
     info!("Listening on {}", server.local_addr().unwrap());
     for stream in server.incoming().flatten() {
         if let Ok(addr) = stream.peer_addr() {
-            info!("Connecting: {}", addr);
+            info!("Connecting: {addr}");
             match accept(stream) {
                 Ok(conn) => {
                     tx.send(conn).unwrap();
-                },
+                }
                 Err(e) => {
-                    error!("Websocket handshake failed: {}", e)
+                    error!("Websocket handshake failed: {e}")
                 }
             }
         }
@@ -47,7 +47,7 @@ struct Opts {
     port: u16,
 
     #[clap(short, long, value_parser)]
-    songs_dir: Option<PathBuf>
+    songs_dir: Option<PathBuf>,
 }
 
 fn main() {
