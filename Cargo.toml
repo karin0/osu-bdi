@@ -7,16 +7,16 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-clap = { version = "3", features = ["derive"] }
-crossbeam-channel = "0"
+clap = { version = "4", features = ["derive"] }
+crossbeam-channel = "0.5"
 lazy_static = "1"
-log = "0"
-notify = "5"
-tungstenite = "0"
+log = "0.4"
+notify = "8"
+tungstenite = "0.27"
 pretty_env_logger = { git = "https://github.com/karin0/pretty-env-logger.git" }
 
 [target.'cfg(windows)'.dependencies]
-winreg = "0"
+winreg = "0.55"
 
 [profile.release]
 strip = true
