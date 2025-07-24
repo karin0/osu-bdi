@@ -7,7 +7,7 @@ mod sys {
 
     fn get_osu_command() -> io::Result<String> {
         RegKey::predef(HKEY_CLASSES_ROOT)
-            .open_subkey("osu\\shell\\open\\command")?
+            .open_subkey("osustable.File.osz\\Shell\\Open\\Command")?
             .get_value("")
     }
 
