@@ -51,7 +51,7 @@ jobs:
           echo "FILE=$FILE" >> $GITHUB_ENV
           xz -cv target/release/osu-bdi.exe > $FILE
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: ${{ env.FILE }}
           path: ${{ env.FILE }}
