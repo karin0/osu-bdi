@@ -3,7 +3,6 @@ use crate::handler::{self, Conn, Handler};
 use log::{debug, info};
 
 use crossbeam_channel::{select, Receiver};
-use lazy_static::lazy_static;
 use notify::event::{CreateKind, ModifyKind, RemoveKind, RenameMode};
 use notify::{Event, EventKind};
 
@@ -24,15 +23,11 @@ fn dispatch_create(handler: &mut Handler, mut paths: Vec<PathBuf>) {
     }
 }
 
-lazy_static! {
-    static ref SOME_OSZ: Option<&'static OsStr> = Some(OsStr::new("osz"));
-}
-
 fn dispatch_remove(handler: &mut Handler, paths: Vec<PathBuf>) {
     if !paths.is_empty() {
         let paths: Vec<String> = paths
             .into_iter()
-            .filter(|buf| buf.extension() != *SOME_OSZ)
+            .filter(|buf| buf.extension() != Some(OsStr::new("osz")))
             .filter_map(to_id)
             .collect();
         if !paths.is_empty() {

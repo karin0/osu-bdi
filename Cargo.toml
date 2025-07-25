@@ -9,7 +9,6 @@ edition = "2021"
 [dependencies]
 clap = { version = "4", features = ["derive"] }
 crossbeam-channel = "0.5"
-lazy_static = "1"
 log = "0.4"
 notify = "8"
 tungstenite = "0.27"
