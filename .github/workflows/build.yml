@@ -12,16 +12,12 @@ jobs:
       RUSTFLAGS: "-C target-feature=+crt-static"
       TARGET: x86_64-pc-windows-msvc
     steps:
-      - uses: actions/checkout@v2
-
-      - uses: actions-rs/toolchain@v1
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
         with:
-          target: ${{ env.TARGET }}
-          toolchain: stable
-          profile: minimal
-          default: true
+          targets: ${{ env.TARGET }}
 
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         with:
           path: |
             ~/.cargo/bin/
@@ -29,27 +25,20 @@ jobs:
             ~/.cargo/registry/cache/
             ~/.cargo/git/db/
             target/
-          key: ${{ runner.os }}-cargo-win
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
 
-      - name: Update dependencies
-        uses: actions-rs/cargo@v1
-        with:
-          command: update
-
-      - name: Build x86_64-pc-windows-msvc
-        uses: actions-rs/cargo@v1
-        with:
-          command: build
-          args: --release --no-default-features
-
-      - uses: msys2/setup-msys2@v2
+      - run: cargo fmt --check
+      - run: cargo update
+      - run: cargo clippy -- -D warnings
+      - run: cargo build --release --target ${{ env.TARGET }}
 
       - name: Compress Binary
-        shell: msys2 {0}
         run: |
-          FILE=osu-bdi-${GITHUB_SHA::7}-$TARGET.xz
-          echo "FILE=$FILE" >> $GITHUB_ENV
-          xz -cv target/release/osu-bdi.exe > $FILE
+          $FILE = "osu-bdi-$($env:GITHUB_SHA.Substring(0, 7))-$($env:TARGET).xz"
+          echo "FILE=$FILE" >> $env:GITHUB_ENV
+          7z a $FILE target/${{ env.TARGET }}/release/osu-bdi.exe
 
       - uses: actions/upload-artifact@v4
         with:
