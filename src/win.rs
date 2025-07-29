@@ -3,7 +3,7 @@ mod sys {
     use log::{debug, error, info};
     use std::io;
     use std::path::PathBuf;
-    use winreg::{enums::HKEY_CLASSES_ROOT, RegKey};
+    use winreg::{RegKey, enums::HKEY_CLASSES_ROOT};
 
     fn get_osu_command() -> io::Result<String> {
         RegKey::predef(HKEY_CLASSES_ROOT)
@@ -17,7 +17,7 @@ mod sys {
                 let s = s.trim();
                 debug!("Found in registry: {s}");
                 match s.chars().next() {
-                    Some('"') => s[1..].find('"').map(|p| s[1..p + 1].to_owned()),
+                    Some('"') => s[1..].find('"').map(|p| s[1..=p].to_owned()),
                     _ => match s.find(' ') {
                         Some(p) => Some(s[0..p].to_owned()),
                         _ => Some(s.to_owned()),

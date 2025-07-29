@@ -65,7 +65,7 @@ impl Handler {
             info!("Adding {id}");
             self.ids.insert(id.parse::<Id>().unwrap());
         }
-        self.notify(ids, '+')
+        self.notify(ids, '+');
     }
 
     pub fn remove(&mut self, ids: Vec<String>) {
@@ -73,7 +73,7 @@ impl Handler {
             info!("Removing {id}");
             self.ids.remove(&id.parse::<Id>().unwrap());
         }
-        self.notify(ids, '-')
+        self.notify(ids, '-');
     }
 
     pub fn add_conn(&mut self, mut conn: Conn) {

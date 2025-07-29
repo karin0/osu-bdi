@@ -8,7 +8,7 @@ use log::error;
 use log::info;
 
 use clap::Parser;
-use crossbeam_channel::{unbounded, Sender};
+use crossbeam_channel::{Sender, unbounded};
 use notify::Watcher;
 use tungstenite::accept;
 
@@ -30,7 +30,7 @@ fn listen(addr: &str, port: u16, tx: Sender<Conn>) {
                     tx.send(conn).unwrap();
                 }
                 Err(e) => {
-                    error!("Websocket handshake failed: {e}")
+                    error!("Websocket handshake failed: {e}");
                 }
             }
         }
@@ -52,20 +52,21 @@ struct Opts {
 
 fn main() {
     if std::env::var("RUST_LOG").is_err() {
-        std::env::set_var("RUST_LOG", "info");
+        unsafe {
+            std::env::set_var("RUST_LOG", "info");
+        }
     }
     pretty_env_logger::init_timed();
 
     let opts = Opts::parse();
-    let path: &Path = match &opts.songs_dir {
-        Some(s) => s,
-        None => {
-            let t = Box::leak(win::find_songs_path().unwrap_or_else(|| {
-                eprintln!("Cannot detect your osu! installation, please specify your Songs directory by --songs-dir");
-                process::exit(1);
-            }).into_boxed_str());
-            (*t).as_ref()
-        }
+    let path: &Path = if let Some(s) = &opts.songs_dir {
+        s
+    } else {
+        let t = Box::leak(win::find_songs_path().unwrap_or_else(|| {
+            eprintln!("Cannot detect your osu! installation, please specify your Songs directory by --songs-dir");
+            process::exit(1);
+        }).into_boxed_str());
+        (*t).as_ref()
     };
     let addr = opts.addr;
     let port = opts.port;

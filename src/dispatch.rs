@@ -2,7 +2,7 @@ use crate::handler::{self, Conn, Handler};
 
 use log::{debug, info};
 
-use crossbeam_channel::{select, Receiver};
+use crossbeam_channel::{Receiver, select};
 use notify::event::{CreateKind, ModifyKind, RemoveKind, RenameMode};
 use notify::{Event, EventKind};
 
@@ -59,12 +59,10 @@ pub fn work(hdr: &mut Handler, fs_rx: Receiver<Event>, conn_rx: Receiver<Conn>) 
                    debug!("Fs event: {event:?}");
                    let paths = event.paths;
                    match event.kind {
-                       EventKind::Create(CreateKind::Any) |
-                       EventKind::Create(CreateKind::Folder) |
+                       EventKind::Create(CreateKind::Any | CreateKind::Folder) |
                        EventKind::Modify(ModifyKind::Name(RenameMode::To))
                            => dispatch_create(hdr, paths),
-                       EventKind::Remove(RemoveKind::Any) |
-                       EventKind::Remove(RemoveKind::Folder) |
+                       EventKind::Remove(RemoveKind::Any | RemoveKind::Folder) |
                        EventKind::Modify(ModifyKind::Name(RenameMode::From))
                            => dispatch_remove(hdr, paths),
                        EventKind::Modify(ModifyKind::Name(RenameMode::Both))
